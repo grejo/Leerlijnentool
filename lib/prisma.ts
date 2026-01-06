@@ -1,7 +1,7 @@
 // Prisma-compatible wrapper for Drizzle ORM
 // This allows existing code to work without major changes
 
-import { db, users, programs, courses, learningLines, tracks, components, contents, userPrograms, programLearningLines } from './db';
+import { db, users, programs, courses, learningLines, tracks, components, contents, userPrograms, programLearningLines, programTracks } from './db';
 import { eq, and, desc, asc, inArray } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 
@@ -375,28 +375,65 @@ const learningLineModel = {
 
 // Track model
 const trackModel = {
-  async findUnique({ where }: { where: { id: string } }) {
-    return db.query.tracks.findFirst({ where: eq(tracks.id, where.id) });
-  },
-
-  async findMany(options?: { orderBy?: any }) {
-    return db.query.tracks.findMany({
-      orderBy: [asc(tracks.order), asc(tracks.name)],
+  async findUnique({ where, include }: { where: { id: string }; include?: any }) {
+    return db.query.tracks.findFirst({
+      where: eq(tracks.id, where.id),
+      with: include?.programs ? { programs: { with: { program: true } } } : undefined,
     });
   },
 
-  async create({ data }: { data: { name: string; order?: number } }) {
-    const id = generateId();
-    await db.insert(tracks).values({ id, name: data.name, order: data.order || 0 });
-    return db.query.tracks.findFirst({ where: eq(tracks.id, id) });
+  async findMany(options?: { orderBy?: any; include?: any }) {
+    return db.query.tracks.findMany({
+      orderBy: [asc(tracks.order), asc(tracks.name)],
+      with: options?.include?.programs ? { programs: { with: { program: true } } } : undefined,
+    });
   },
 
-  async update({ where, data }: { where: { id: string }; data: { name?: string; order?: number } }) {
+  async create({ data, include }: { data: { name: string; order?: number; programs?: { create: { programId: string }[] } }; include?: any }) {
+    const id = generateId();
+    await db.insert(tracks).values({ id, name: data.name, order: data.order || 0 });
+
+    if (data.programs?.create) {
+      for (const p of data.programs.create) {
+        await db.insert(programTracks).values({
+          id: generateId(),
+          programId: p.programId,
+          trackId: id,
+        });
+      }
+    }
+
+    return db.query.tracks.findFirst({
+      where: eq(tracks.id, id),
+      with: include?.programs ? { programs: { with: { program: true } } } : undefined,
+    });
+  },
+
+  async update({ where, data, include }: { where: { id: string }; data: { name?: string; order?: number; programs?: any }; include?: any }) {
     const updateData: any = { updatedAt: new Date() };
     if (data.name) updateData.name = data.name;
     if (data.order !== undefined) updateData.order = data.order;
     await db.update(tracks).set(updateData).where(eq(tracks.id, where.id));
-    return db.query.tracks.findFirst({ where: eq(tracks.id, where.id) });
+
+    if (data.programs) {
+      if (data.programs.deleteMany !== undefined) {
+        await db.delete(programTracks).where(eq(programTracks.trackId, where.id));
+      }
+      if (data.programs.create) {
+        for (const p of data.programs.create) {
+          await db.insert(programTracks).values({
+            id: generateId(),
+            programId: p.programId,
+            trackId: where.id,
+          });
+        }
+      }
+    }
+
+    return db.query.tracks.findFirst({
+      where: eq(tracks.id, where.id),
+      with: include?.programs ? { programs: { with: { program: true } } } : undefined,
+    });
   },
 
   async delete({ where }: { where: { id: string } }) {

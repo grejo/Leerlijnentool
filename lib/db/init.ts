@@ -71,6 +71,16 @@ sqlite.exec(`
     updatedAt INTEGER NOT NULL
   );
 
+  CREATE TABLE IF NOT EXISTS ProgramTrack (
+    id TEXT PRIMARY KEY,
+    programId TEXT NOT NULL,
+    trackId TEXT NOT NULL,
+    createdAt INTEGER NOT NULL,
+    FOREIGN KEY (programId) REFERENCES Program(id) ON DELETE CASCADE,
+    FOREIGN KEY (trackId) REFERENCES Track(id) ON DELETE CASCADE,
+    UNIQUE(programId, trackId)
+  );
+
   CREATE TABLE IF NOT EXISTS Component (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
@@ -106,6 +116,8 @@ sqlite.exec(`
   CREATE INDEX IF NOT EXISTS idx_course_programid ON Course(programId);
   CREATE INDEX IF NOT EXISTS idx_programlearningline_programid ON ProgramLearningLine(programId);
   CREATE INDEX IF NOT EXISTS idx_programlearningline_learninglineid ON ProgramLearningLine(learningLineId);
+  CREATE INDEX IF NOT EXISTS idx_programtrack_programid ON ProgramTrack(programId);
+  CREATE INDEX IF NOT EXISTS idx_programtrack_trackid ON ProgramTrack(trackId);
   CREATE INDEX IF NOT EXISTS idx_component_learninglineid ON Component(learningLineId);
   CREATE INDEX IF NOT EXISTS idx_content_programid ON Content(programId);
   CREATE INDEX IF NOT EXISTS idx_content_learninglineid ON Content(learningLineId);

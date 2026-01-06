@@ -14,11 +14,25 @@ export async function PUT(
   }
 
   const body = await request.json()
-  const { name, order } = body
+  const { name, order, programIds } = body
 
   const track = await prisma.track.update({
     where: { id: params.id },
-    data: { name, order: order || 0 },
+    data: {
+      name,
+      order: order || 0,
+      programs: programIds !== undefined ? {
+        deleteMany: {},
+        create: programIds.map((programId: string) => ({ programId }))
+      } : undefined,
+    },
+    include: {
+      programs: {
+        include: {
+          program: true,
+        },
+      },
+    },
   })
 
   return NextResponse.json(track)

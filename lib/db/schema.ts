@@ -61,6 +61,14 @@ export const tracks = sqliteTable('Track', {
   updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
 });
 
+// ProgramTrack join table
+export const programTracks = sqliteTable('ProgramTrack', {
+  id: text('id').primaryKey(),
+  programId: text('programId').notNull().references(() => programs.id, { onDelete: 'cascade' }),
+  trackId: text('trackId').notNull().references(() => tracks.id, { onDelete: 'cascade' }),
+  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
+});
+
 // Components table
 export const components = sqliteTable('Component', {
   id: text('id').primaryKey(),
@@ -95,6 +103,7 @@ export const programsRelations = relations(programs, ({ many }) => ({
   users: many(userPrograms),
   courses: many(courses),
   learningLines: many(programLearningLines),
+  tracks: many(programTracks),
   contents: many(contents),
 }));
 
@@ -120,7 +129,13 @@ export const programLearningLinesRelations = relations(programLearningLines, ({ 
 }));
 
 export const tracksRelations = relations(tracks, ({ many }) => ({
+  programs: many(programTracks),
   contents: many(contents),
+}));
+
+export const programTracksRelations = relations(programTracks, ({ one }) => ({
+  program: one(programs, { fields: [programTracks.programId], references: [programs.id] }),
+  track: one(tracks, { fields: [programTracks.trackId], references: [tracks.id] }),
 }));
 
 export const componentsRelations = relations(components, ({ one, many }) => ({

@@ -5,10 +5,16 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
+
+const RichTextEditor = dynamic(() => import('@/components/RichTextEditor'), {
+  ssr: false,
+})
 
 interface Content {
   id: string
   richTextBody: string
+  programId: string
   program: { id: string; name: string }
   learningLine: { id: string; title: string }
   component: { id: string; name: string }
@@ -22,13 +28,46 @@ interface Program {
   name: string
 }
 
+interface LearningLine {
+  id: string
+  title: string
+}
+
+interface Component {
+  id: string
+  name: string
+}
+
+interface Track {
+  id: string
+  name: string
+}
+
+interface Course {
+  id: string
+  name: string
+}
+
 export default function ContentsManagement() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [contents, setContents] = useState<Content[]>([])
   const [programs, setPrograms] = useState<Program[]>([])
+  const [learningLines, setLearningLines] = useState<LearningLine[]>([])
+  const [components, setComponents] = useState<Component[]>([])
+  const [tracks, setTracks] = useState<Track[]>([])
+  const [courses, setCourses] = useState<Course[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedProgramId, setSelectedProgramId] = useState<string>('')
+  const [showModal, setShowModal] = useState(false)
+  const [editingContent, setEditingContent] = useState<Content | null>(null)
+  const [formData, setFormData] = useState({
+    richTextBody: '',
+    learningLineId: '',
+    componentId: '',
+    trackId: '',
+    courseId: '',
+  })
 
   useEffect(() => {
     if (status === 'loading') return
@@ -48,6 +87,7 @@ export default function ContentsManagement() {
   useEffect(() => {
     if (selectedProgramId) {
       fetchContents()
+      fetchProgramData()
     }
   }, [selectedProgramId])
 
@@ -63,6 +103,28 @@ export default function ContentsManagement() {
     }
   }
 
+  const fetchProgramData = async () => {
+    if (!selectedProgramId) return
+
+    try {
+      const [llRes, tracksRes, coursesRes] = await Promise.all([
+        fetch(`/api/learning-lines?programId=${selectedProgramId}`),
+        fetch('/api/tracks'),
+        fetch(`/api/courses?programId=${selectedProgramId}`),
+      ])
+
+      const llData = await llRes.json()
+      const tracksData = await tracksRes.json()
+      const coursesData = await coursesRes.json()
+
+      setLearningLines(llData)
+      setTracks(tracksData)
+      setCourses(coursesData)
+    } catch (error) {
+      console.error('Error fetching program data:', error)
+    }
+  }
+
   const fetchContents = async () => {
     if (!selectedProgramId) return
 
@@ -73,6 +135,70 @@ export default function ContentsManagement() {
       setContents(data)
     } catch (error) {
       console.error('Error fetching contents:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchComponents = async (learningLineId: string) => {
+    try {
+      const res = await fetch(`/api/components?learningLineId=${learningLineId}`)
+      const data = await res.json()
+      setComponents(data)
+    } catch (error) {
+      console.error('Error fetching components:', error)
+    }
+  }
+
+  const handleOpenModal = (content: Content) => {
+    setEditingContent(content)
+    setFormData({
+      richTextBody: content.richTextBody,
+      learningLineId: content.learningLine.id,
+      componentId: content.component.id,
+      trackId: content.track.id,
+      courseId: content.course.id,
+    })
+    fetchComponents(content.learningLine.id)
+    setShowModal(true)
+  }
+
+  const handleCloseModal = () => {
+    setShowModal(false)
+    setEditingContent(null)
+    setFormData({
+      richTextBody: '',
+      learningLineId: '',
+      componentId: '',
+      trackId: '',
+      courseId: '',
+    })
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingContent) return
+
+    setLoading(true)
+
+    try {
+      const res = await fetch(`/api/contents/${editingContent.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+
+      if (!res.ok) {
+        const error = await res.json()
+        alert(error.error || 'Fout bij bijwerken inhoud')
+        return
+      }
+
+      await fetchContents()
+      handleCloseModal()
+    } catch (error) {
+      console.error('Error saving content:', error)
+      alert('Er is een fout opgetreden')
     } finally {
       setLoading(false)
     }
@@ -103,6 +229,11 @@ export default function ContentsManagement() {
     }
   }
 
+  const handleLearningLineChange = (learningLineId: string) => {
+    setFormData({ ...formData, learningLineId, componentId: '' })
+    fetchComponents(learningLineId)
+  }
+
   if (status === 'loading') {
     return <div>Loading...</div>
   }
@@ -123,19 +254,9 @@ export default function ContentsManagement() {
           >
             ← Terug naar dashboard
           </Link>
-          <div className="flex justify-between items-start">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Leerinhoud Overzicht</h1>
-              <p className="text-gray-600 mt-2">Bekijk en beheer alle leerinhoud per opleiding</p>
-            </div>
-            {selectedProgramId && (
-              <Link
-                href={`/docent/programs/${selectedProgramId}`}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-              >
-                Beheer inhoud voor dit programma
-              </Link>
-            )}
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Leerinhoud Overzicht</h1>
+            <p className="text-gray-600 mt-2">Bekijk en beheer alle leerinhoud per opleiding</p>
           </div>
         </div>
 
@@ -210,6 +331,12 @@ export default function ContentsManagement() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <button
+                        onClick={() => handleOpenModal(content)}
+                        className="text-blue-600 hover:text-blue-800 mr-4"
+                      >
+                        Bewerken
+                      </button>
+                      <button
                         onClick={() => handleDelete(content.id)}
                         className="text-red-600 hover:text-red-800"
                       >
@@ -220,6 +347,132 @@ export default function ContentsManagement() {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {/* Edit Modal */}
+        {showModal && editingContent && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <h2 className="text-2xl font-bold mb-4">Leerinhoud Bewerken</h2>
+              <form onSubmit={handleSubmit}>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Leerlijn *
+                      </label>
+                      <select
+                        value={formData.learningLineId}
+                        onChange={(e) => handleLearningLineChange(e.target.value)}
+                        required
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="">Selecteer leerlijn</option>
+                        {learningLines.map((ll) => (
+                          <option key={ll.id} value={ll.id}>
+                            {ll.title}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Vakgebied *
+                      </label>
+                      <select
+                        value={formData.componentId}
+                        onChange={(e) =>
+                          setFormData({ ...formData, componentId: e.target.value })
+                        }
+                        required
+                        disabled={!formData.learningLineId}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
+                      >
+                        <option value="">Selecteer vakgebied</option>
+                        {components.map((comp) => (
+                          <option key={comp.id} value={comp.id}>
+                            {comp.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Leertraject *
+                      </label>
+                      <select
+                        value={formData.trackId}
+                        onChange={(e) =>
+                          setFormData({ ...formData, trackId: e.target.value })
+                        }
+                        required
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="">Selecteer leertraject</option>
+                        {tracks.map((track) => (
+                          <option key={track.id} value={track.id}>
+                            {track.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Opleidingsonderdeel *
+                      </label>
+                      <select
+                        value={formData.courseId}
+                        onChange={(e) =>
+                          setFormData({ ...formData, courseId: e.target.value })
+                        }
+                        required
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="">Selecteer opleidingsonderdeel</option>
+                        {courses.map((course) => (
+                          <option key={course.id} value={course.id}>
+                            {course.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Inhoud *
+                    </label>
+                    <RichTextEditor
+                      content={formData.richTextBody}
+                      onChange={(html) =>
+                        setFormData({ ...formData, richTextBody: html })
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-6 flex justify-end gap-4">
+                  <button
+                    type="button"
+                    onClick={handleCloseModal}
+                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                  >
+                    Annuleren
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400"
+                  >
+                    {loading ? 'Opslaan...' : 'Opslaan'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         )}
       </div>

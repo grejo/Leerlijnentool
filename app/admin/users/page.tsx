@@ -256,7 +256,7 @@ export default function UsersManagement() {
                       {getRoleLabel(user.role)}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900">
-                      {user.programs.length > 0 ? (
+                      {user.programs && user.programs.length > 0 ? (
                         <div className="flex flex-wrap gap-1">
                           {user.programs.map((up) => (
                             <span
@@ -353,7 +353,7 @@ export default function UsersManagement() {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Toegewezen opleidingen
                       </label>
-                      <div className="space-y-2 max-h-48 overflow-y-auto border border-gray-300 rounded-md p-3">
+                      <div className="space-y-2 max-h-48 overflow-y-auto border border-gray-300 rounded-md p-3 bg-white">
                         {programs.map((program) => (
                           <label key={program.id} className="flex items-center">
                             <input
@@ -362,7 +362,7 @@ export default function UsersManagement() {
                               onChange={() => handleProgramToggle(program.id)}
                               className="mr-2"
                             />
-                            <span className="text-sm">{program.name}</span>
+                            <span className="text-sm text-gray-900">{program.name}</span>
                           </label>
                         ))}
                       </div>

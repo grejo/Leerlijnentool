@@ -272,7 +272,7 @@ export default function LearningLinesManagement() {
                         setFormData({ ...formData, title: e.target.value })
                       }
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
 
@@ -280,7 +280,7 @@ export default function LearningLinesManagement() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Gekoppelde opleidingen
                     </label>
-                    <div className="space-y-2 max-h-48 overflow-y-auto border border-gray-300 rounded-md p-3">
+                    <div className="space-y-2 max-h-48 overflow-y-auto border border-gray-300 rounded-md p-3 bg-white">
                       {programs.map((program) => (
                         <label key={program.id} className="flex items-center">
                           <input
@@ -289,7 +289,7 @@ export default function LearningLinesManagement() {
                             onChange={() => handleProgramToggle(program.id)}
                             className="mr-2"
                           />
-                          <span className="text-sm">{program.name}</span>
+                          <span className="text-sm text-gray-900">{program.name}</span>
                         </label>
                       ))}
                     </div>

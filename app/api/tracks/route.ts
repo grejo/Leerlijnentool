@@ -14,6 +14,13 @@ export async function GET() {
     orderBy: {
       order: 'asc',
     },
+    include: {
+      programs: {
+        include: {
+          program: true,
+        },
+      },
+    },
   })
 
   return NextResponse.json(tracks)
@@ -27,7 +34,7 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json()
-  const { name, order } = body
+  const { name, order, programIds } = body
 
   if (!name) {
     return NextResponse.json({ error: 'Naam is verplicht' }, { status: 400 })
@@ -37,6 +44,16 @@ export async function POST(request: NextRequest) {
     data: {
       name,
       order: order || 0,
+      programs: programIds && programIds.length > 0 ? {
+        create: programIds.map((programId: string) => ({ programId }))
+      } : undefined,
+    },
+    include: {
+      programs: {
+        include: {
+          program: true,
+        },
+      },
     },
   })
 

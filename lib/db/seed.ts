@@ -111,6 +111,18 @@ async function main() {
   `).run(trackId2, 'Jaar 2', 2, now, now);
   console.log('Created tracks');
 
+  // Link tracks to programs
+  sqlite.prepare(`
+    INSERT OR REPLACE INTO ProgramTrack (id, programId, trackId, createdAt)
+    VALUES (?, ?, ?, ?)
+  `).run('pt-1', programId1, trackId1, now);
+
+  sqlite.prepare(`
+    INSERT OR REPLACE INTO ProgramTrack (id, programId, trackId, createdAt)
+    VALUES (?, ?, ?, ?)
+  `).run('pt-2', programId1, trackId2, now);
+  console.log('Linked tracks to programs');
+
   // Create courses
   const courseId1 = 'course-1';
   const courseId2 = 'course-2';

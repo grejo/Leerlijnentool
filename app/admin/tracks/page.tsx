@@ -6,21 +6,36 @@ import { useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import Link from 'next/link'
 
+interface Program {
+  id: string
+  name: string
+}
+
+interface TrackProgram {
+  program: Program
+}
+
 interface Track {
   id: string
   name: string
   order: number
   createdAt: string
+  programs: TrackProgram[]
 }
 
 export default function TracksManagement() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [tracks, setTracks] = useState<Track[]>([])
+  const [programs, setPrograms] = useState<Program[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [editingTrack, setEditingTrack] = useState<Track | null>(null)
-  const [formData, setFormData] = useState({ name: '', order: 0 })
+  const [formData, setFormData] = useState({
+    name: '',
+    order: 0,
+    programIds: [] as string[],
+  })
 
   useEffect(() => {
     if (status === 'loading') return
@@ -28,16 +43,21 @@ export default function TracksManagement() {
       router.push('/')
       return
     }
-    fetchTracks()
+    fetchData()
   }, [session, status, router])
 
-  const fetchTracks = async () => {
+  const fetchData = async () => {
     try {
-      const res = await fetch('/api/tracks')
-      const data = await res.json()
-      setTracks(data)
+      const [tracksRes, programsRes] = await Promise.all([
+        fetch('/api/tracks'),
+        fetch('/api/programs'),
+      ])
+      const tracksData = await tracksRes.json()
+      const programsData = await programsRes.json()
+      setTracks(tracksData)
+      setPrograms(programsData)
     } catch (error) {
-      console.error('Error fetching tracks:', error)
+      console.error('Error fetching data:', error)
     } finally {
       setLoading(false)
     }
@@ -46,10 +66,14 @@ export default function TracksManagement() {
   const handleOpenModal = (track?: Track) => {
     if (track) {
       setEditingTrack(track)
-      setFormData({ name: track.name, order: track.order })
+      setFormData({
+        name: track.name,
+        order: track.order,
+        programIds: track.programs.map((tp) => tp.program.id),
+      })
     } else {
       setEditingTrack(null)
-      setFormData({ name: '', order: tracks.length })
+      setFormData({ name: '', order: tracks.length, programIds: [] })
     }
     setShowModal(true)
   }
@@ -57,7 +81,16 @@ export default function TracksManagement() {
   const handleCloseModal = () => {
     setShowModal(false)
     setEditingTrack(null)
-    setFormData({ name: '', order: 0 })
+    setFormData({ name: '', order: 0, programIds: [] })
+  }
+
+  const handleProgramToggle = (programId: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      programIds: prev.programIds.includes(programId)
+        ? prev.programIds.filter((id) => id !== programId)
+        : [...prev.programIds, programId],
+    }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -91,7 +124,7 @@ export default function TracksManagement() {
         }
       }
 
-      await fetchTracks()
+      await fetchData()
       handleCloseModal()
     } catch (error) {
       console.error('Error saving track:', error)
@@ -117,7 +150,7 @@ export default function TracksManagement() {
         return
       }
 
-      await fetchTracks()
+      await fetchData()
     } catch (error) {
       console.error('Error deleting track:', error)
       alert('Er is een fout opgetreden')
@@ -171,6 +204,9 @@ export default function TracksManagement() {
                     Naam
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Opleidingen
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Volgorde
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -183,6 +219,22 @@ export default function TracksManagement() {
                   <tr key={track.id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {track.name}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-900">
+                      {track.programs && track.programs.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {track.programs.map((tp) => (
+                            <span
+                              key={tp.program.id}
+                              className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs"
+                            >
+                              {tp.program.name}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-gray-400">Geen</span>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {track.order}
@@ -211,7 +263,7 @@ export default function TracksManagement() {
         {/* Modal */}
         {showModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <h2 className="text-2xl font-bold mb-4">
                 {editingTrack ? 'Leertraject bewerken' : 'Nieuw leertraject'}
               </h2>
@@ -229,7 +281,7 @@ export default function TracksManagement() {
                       }
                       required
                       placeholder="bijv. Jaar 1, Fase 2"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
 
@@ -244,8 +296,27 @@ export default function TracksManagement() {
                         setFormData({ ...formData, order: parseInt(e.target.value) })
                       }
                       min="0"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Gekoppelde opleidingen
+                    </label>
+                    <div className="space-y-2 max-h-48 overflow-y-auto border border-gray-300 rounded-md p-3 bg-white">
+                      {programs.map((program) => (
+                        <label key={program.id} className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={formData.programIds.includes(program.id)}
+                            onChange={() => handleProgramToggle(program.id)}
+                            className="mr-2"
+                          />
+                          <span className="text-sm text-gray-900">{program.name}</span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
