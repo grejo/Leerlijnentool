@@ -148,13 +148,14 @@ export default function ProgramsManagement() {
             >
               ← Terug naar dashboard
             </Link>
-            <h1 className="text-3xl font-bold text-gray-900">Programmabeheer</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Opleidingenbeheer</h1>
+            <p className="text-gray-600 mt-2">Alleen beheerders kunnen opleidingen aanmaken en beheren</p>
           </div>
           <button
             onClick={() => handleOpenModal()}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
           >
-            + Nieuw programma
+            + Nieuwe opleiding
           </button>
         </div>
 
@@ -219,7 +220,7 @@ export default function ProgramsManagement() {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-lg p-6 max-w-md w-full">
               <h2 className="text-2xl font-bold mb-4">
-                {editingProgram ? 'Programma bewerken' : 'Nieuw programma'}
+                {editingProgram ? 'Opleiding bewerken' : 'Nieuwe opleiding'}
               </h2>
               <form onSubmit={handleSubmit}>
                 <div className="mb-4">

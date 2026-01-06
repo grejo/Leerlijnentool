@@ -90,7 +90,7 @@ export default function AdminDashboard() {
               Gebruikersbeheer
             </h2>
             <p className="text-gray-600">
-              Beheer gebruikers, rollen en programma-toewijzingen
+              Beheer gebruikers, rollen en opleiding-toewijzingen
             </p>
           </Link>
 
@@ -99,9 +99,9 @@ export default function AdminDashboard() {
             className="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 p-6 border border-gray-200"
           >
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
-              Programma's
+              Opleidingen
             </h2>
-            <p className="text-gray-600">Beheer opleidingsprogramma's</p>
+            <p className="text-gray-600">Beheer opleidingen en koppel docenten</p>
           </Link>
 
           <Link
@@ -112,7 +112,7 @@ export default function AdminDashboard() {
               Leerlijnen
             </h2>
             <p className="text-gray-600">
-              Beheer leerlijnen en koppel deze aan programma's
+              Beheer leerlijnen en koppel deze aan opleidingen
             </p>
           </Link>
 
@@ -131,9 +131,9 @@ export default function AdminDashboard() {
             className="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 p-6 border border-gray-200"
           >
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
-              Leercomponenten
+              Vakgebieden
             </h2>
-            <p className="text-gray-600">Beheer leercomponenten binnen leerlijnen</p>
+            <p className="text-gray-600">Beheer vakgebieden binnen leerlijnen</p>
           </Link>
 
           <Link

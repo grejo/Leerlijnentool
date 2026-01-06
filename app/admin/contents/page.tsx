@@ -124,13 +124,13 @@ export default function ContentsManagement() {
             ← Terug naar dashboard
           </Link>
           <h1 className="text-3xl font-bold text-gray-900">Leerinhoud Overzicht</h1>
-          <p className="text-gray-600 mt-2">Bekijk en beheer alle leerinhoud per programma</p>
+          <p className="text-gray-600 mt-2">Bekijk en beheer alle leerinhoud per opleiding</p>
         </div>
 
         {/* Program Filter */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Selecteer Programma
+            Selecteer Opleiding
           </label>
           <select
             value={selectedProgramId}
@@ -151,7 +151,7 @@ export default function ContentsManagement() {
           </div>
         ) : contents.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-            <p className="text-gray-500">Geen inhoud gevonden voor dit programma</p>
+            <p className="text-gray-500">Geen inhoud gevonden voor deze opleiding</p>
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow-sm overflow-hidden">

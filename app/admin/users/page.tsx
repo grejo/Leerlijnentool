@@ -239,7 +239,7 @@ export default function UsersManagement() {
                     Rol
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Programma's
+                    Opleidingen
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Acties
@@ -351,7 +351,7 @@ export default function UsersManagement() {
                   {formData.role === 'DOCENT' && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Toegewezen programma's
+                        Toegewezen opleidingen
                       </label>
                       <div className="space-y-2 max-h-48 overflow-y-auto border border-gray-300 rounded-md p-3">
                         {programs.map((program) => (
