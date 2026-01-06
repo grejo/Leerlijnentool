@@ -1,7 +1,8 @@
 import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
-import { prisma } from './prisma'
+import { db, users } from './db'
+import { eq } from 'drizzle-orm'
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -16,8 +17,8 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Email en wachtwoord zijn verplicht')
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
+        const user = await db.query.users.findFirst({
+          where: eq(users.email, credentials.email),
         })
 
         if (!user) {
