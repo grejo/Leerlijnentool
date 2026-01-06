@@ -1,0 +1,150 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  DOCENT
+  STUDENT
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  role      Role
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Many-to-Many: Docent assigned to Programs
+  programs  UserProgram[]
+  contents  Content[]
+}
+
+model Program {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  users         UserProgram[]
+  courses       Course[]
+  learningLines ProgramLearningLine[]
+  contents      Content[]
+}
+
+// Join table for User-Program (Docent assignments)
+model UserProgram {
+  id        String   @id @default(cuid())
+  userId    String
+  programId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  program Program @relation(fields: [programId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, programId])
+  @@index([userId])
+  @@index([programId])
+}
+
+model Course {
+  id        String   @id @default(cuid())
+  name      String
+  programId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  program  Program   @relation(fields: [programId], references: [id], onDelete: Cascade)
+  contents Content[]
+
+  @@index([programId])
+}
+
+model LearningLine {
+  id        String   @id @default(cuid())
+  title     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Many-to-Many with Programs
+  programs   ProgramLearningLine[]
+  components Component[]
+  contents   Content[]
+}
+
+// Join table for Program-LearningLine (Many-to-Many)
+model ProgramLearningLine {
+  id            String   @id @default(cuid())
+  programId     String
+  learningLineId String
+  createdAt     DateTime @default(now())
+
+  program      Program      @relation(fields: [programId], references: [id], onDelete: Cascade)
+  learningLine LearningLine @relation(fields: [learningLineId], references: [id], onDelete: Cascade)
+
+  @@unique([programId, learningLineId])
+  @@index([programId])
+  @@index([learningLineId])
+}
+
+model Track {
+  id        String   @id @default(cuid())
+  name      String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  contents Content[]
+}
+
+model Component {
+  id             String   @id @default(cuid())
+  name           String
+  learningLineId String
+  order          Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  learningLine LearningLine @relation(fields: [learningLineId], references: [id], onDelete: Cascade)
+  contents     Content[]
+
+  @@index([learningLineId])
+}
+
+model Content {
+  id             String   @id @default(cuid())
+  richTextBody   String   // HTML content
+  programId      String
+  learningLineId String
+  componentId    String
+  trackId        String
+  courseId       String
+  createdById    String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  program      Program      @relation(fields: [programId], references: [id], onDelete: Cascade)
+  learningLine LearningLine @relation(fields: [learningLineId], references: [id], onDelete: Cascade)
+  component    Component    @relation(fields: [componentId], references: [id], onDelete: Cascade)
+  track        Track        @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  course       Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  createdBy    User         @relation(fields: [createdById], references: [id])
+
+  @@index([programId])
+  @@index([learningLineId])
+  @@index([componentId])
+  @@index([trackId])
+  @@index([courseId])
+  @@index([createdById])
+  @@index([programId, learningLineId])
+}
