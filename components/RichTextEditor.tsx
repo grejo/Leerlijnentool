@@ -131,7 +131,7 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
           1. Lijst
         </button>
       </div>
-      <EditorContent editor={editor} className="prose max-w-none p-4" />
+      <EditorContent editor={editor} className="prose max-w-none p-4 min-h-[200px] bg-white text-gray-900 [&_.ProseMirror]:outline-none [&_.ProseMirror]:min-h-[200px] [&_.ProseMirror]:text-gray-900 [&_.ProseMirror]:bg-white" />
     </div>
   )
 }

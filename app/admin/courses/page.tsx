@@ -11,32 +11,23 @@ interface Program {
   name: string
 }
 
-interface UserProgram {
-  program: Program
-}
-
-interface User {
+interface Course {
   id: string
-  email: string
-  role: string
+  name: string
+  programId: string
+  program?: Program
   createdAt: string
-  programs: UserProgram[]
 }
 
-export default function UsersManagement() {
+export default function CoursesManagement() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [users, setUsers] = useState<User[]>([])
+  const [courses, setCourses] = useState<Course[]>([])
   const [programs, setPrograms] = useState<Program[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
-  const [editingUser, setEditingUser] = useState<User | null>(null)
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    role: 'STUDENT',
-    programIds: [] as string[],
-  })
+  const [editingCourse, setEditingCourse] = useState<Course | null>(null)
+  const [formData, setFormData] = useState({ name: '', programId: '' })
 
   useEffect(() => {
     if (status === 'loading') return
@@ -44,62 +35,42 @@ export default function UsersManagement() {
       router.push('/')
       return
     }
-    fetchUsers()
-    fetchPrograms()
+    fetchData()
   }, [session, status, router])
 
-  const fetchUsers = async () => {
+  const fetchData = async () => {
     try {
-      const res = await fetch('/api/users')
-      const data = await res.json()
-      setUsers(data)
+      setLoading(true)
+      const [coursesRes, programsRes] = await Promise.all([
+        fetch('/api/courses'),
+        fetch('/api/programs')
+      ])
+      const coursesData = await coursesRes.json()
+      const programsData = await programsRes.json()
+      setCourses(coursesData)
+      setPrograms(programsData)
     } catch (error) {
-      console.error('Error fetching users:', error)
+      console.error('Error fetching data:', error)
     } finally {
       setLoading(false)
     }
   }
 
-  const fetchPrograms = async () => {
-    try {
-      const res = await fetch('/api/programs')
-      const data = await res.json()
-      setPrograms(data)
-    } catch (error) {
-      console.error('Error fetching programs:', error)
-    }
-  }
-
-  const handleOpenModal = (user?: User) => {
-    if (user) {
-      setEditingUser(user)
-      setFormData({
-        email: user.email,
-        password: '',
-        role: user.role,
-        programIds: user.programs.map((up) => up.program.id),
-      })
+  const handleOpenModal = (course?: Course) => {
+    if (course) {
+      setEditingCourse(course)
+      setFormData({ name: course.name, programId: course.programId })
     } else {
-      setEditingUser(null)
-      setFormData({
-        email: '',
-        password: '',
-        role: 'STUDENT',
-        programIds: [],
-      })
+      setEditingCourse(null)
+      setFormData({ name: '', programId: '' })
     }
     setShowModal(true)
   }
 
   const handleCloseModal = () => {
     setShowModal(false)
-    setEditingUser(null)
-    setFormData({
-      email: '',
-      password: '',
-      role: 'STUDENT',
-      programIds: [],
-    })
+    setEditingCourse(null)
+    setFormData({ name: '', programId: '' })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -107,9 +78,8 @@ export default function UsersManagement() {
     setLoading(true)
 
     try {
-      if (editingUser) {
-        // Update user
-        const res = await fetch(`/api/users/${editingUser.id}`, {
+      if (editingCourse) {
+        const res = await fetch(`/api/courses/${editingCourse.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData),
@@ -117,12 +87,11 @@ export default function UsersManagement() {
 
         if (!res.ok) {
           const error = await res.json()
-          alert(error.error || 'Fout bij bijwerken gebruiker')
+          alert(error.error || 'Fout bij bijwerken opleidingsonderdeel')
           return
         }
       } else {
-        // Create user
-        const res = await fetch('/api/users', {
+        const res = await fetch('/api/courses', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData),
@@ -130,65 +99,43 @@ export default function UsersManagement() {
 
         if (!res.ok) {
           const error = await res.json()
-          alert(error.error || 'Fout bij aanmaken gebruiker')
+          alert(error.error || 'Fout bij aanmaken opleidingsonderdeel')
           return
         }
       }
 
-      await fetchUsers()
+      await fetchData()
       handleCloseModal()
     } catch (error) {
-      console.error('Error saving user:', error)
+      console.error('Error saving course:', error)
       alert('Er is een fout opgetreden')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleDelete = async (userId: string) => {
-    if (!confirm('Weet u zeker dat u deze gebruiker wilt verwijderen?')) {
+  const handleDelete = async (courseId: string) => {
+    if (!confirm('Weet u zeker dat u dit opleidingsonderdeel wilt verwijderen?')) {
       return
     }
 
     setLoading(true)
     try {
-      const res = await fetch(`/api/users/${userId}`, {
+      const res = await fetch(`/api/courses/${courseId}`, {
         method: 'DELETE',
       })
 
       if (!res.ok) {
-        alert('Fout bij verwijderen gebruiker')
+        alert('Fout bij verwijderen opleidingsonderdeel')
         return
       }
 
-      await fetchUsers()
+      await fetchData()
     } catch (error) {
-      console.error('Error deleting user:', error)
+      console.error('Error deleting course:', error)
       alert('Er is een fout opgetreden')
     } finally {
       setLoading(false)
-    }
-  }
-
-  const handleProgramToggle = (programId: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      programIds: prev.programIds.includes(programId)
-        ? prev.programIds.filter((id) => id !== programId)
-        : [...prev.programIds, programId],
-    }))
-  }
-
-  const getRoleLabel = (role: string) => {
-    switch (role) {
-      case 'ADMIN':
-        return 'Beheerder'
-      case 'DOCENT':
-        return 'Docent'
-      case 'STUDENT':
-        return 'Student'
-      default:
-        return role
     }
   }
 
@@ -213,17 +160,18 @@ export default function UsersManagement() {
             >
               ← Terug naar dashboard
             </Link>
-            <h1 className="text-3xl font-bold text-gray-900">Gebruikersbeheer</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Opleidingsonderdelenbeheer</h1>
+            <p className="text-gray-600 mt-2">Beheer vakken binnen opleidingen</p>
           </div>
           <button
             onClick={() => handleOpenModal()}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
           >
-            + Nieuwe gebruiker
+            + Nieuw opleidingsonderdeel
           </button>
         </div>
 
-        {loading && users.length === 0 ? (
+        {loading && courses.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm p-8 text-center">
             <p className="text-gray-500">Laden...</p>
           </div>
@@ -233,13 +181,10 @@ export default function UsersManagement() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Email
+                    Naam
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Rol
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Opleidingen
+                    Opleiding
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Acties
@@ -247,39 +192,23 @@ export default function UsersManagement() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {users.map((user) => (
-                  <tr key={user.id}>
+                {courses.map((course) => (
+                  <tr key={course.id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {user.email}
+                      {course.name}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {getRoleLabel(user.role)}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      {user.programs.length > 0 ? (
-                        <div className="flex flex-wrap gap-1">
-                          {user.programs.map((up) => (
-                            <span
-                              key={up.program.id}
-                              className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs"
-                            >
-                              {up.program.name}
-                            </span>
-                          ))}
-                        </div>
-                      ) : (
-                        <span className="text-gray-400">Geen</span>
-                      )}
+                      {course.program?.name || programs.find(p => p.id === course.programId)?.name || '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <button
-                        onClick={() => handleOpenModal(user)}
+                        onClick={() => handleOpenModal(course)}
                         className="text-blue-600 hover:text-blue-800 mr-4"
                       >
                         Bewerken
                       </button>
                       <button
-                        onClick={() => handleDelete(user.id)}
+                        onClick={() => handleDelete(course.id)}
                         className="text-red-600 hover:text-red-800"
                       >
                         Verwijderen
@@ -289,85 +218,60 @@ export default function UsersManagement() {
                 ))}
               </tbody>
             </table>
+
+            {courses.length === 0 && (
+              <div className="text-center py-8">
+                <p className="text-gray-500">Geen opleidingsonderdelen gevonden</p>
+              </div>
+            )}
           </div>
         )}
 
         {/* Modal */}
         {showModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full">
               <h2 className="text-2xl font-bold mb-4">
-                {editingUser ? 'Gebruiker bewerken' : 'Nieuwe gebruiker'}
+                {editingCourse ? 'Opleidingsonderdeel bewerken' : 'Nieuw opleidingsonderdeel'}
               </h2>
               <form onSubmit={handleSubmit}>
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Email
+                      Naam *
                     </label>
                     <input
-                      type="email"
-                      value={formData.email}
+                      type="text"
+                      value={formData.name}
                       onChange={(e) =>
-                        setFormData({ ...formData, email: e.target.value })
+                        setFormData({ ...formData, name: e.target.value })
                       }
                       required
+                      placeholder="bijv. Inleiding Programmeren"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Wachtwoord {editingUser && '(laat leeg om niet te wijzigen)'}
-                    </label>
-                    <input
-                      type="password"
-                      value={formData.password}
-                      onChange={(e) =>
-                        setFormData({ ...formData, password: e.target.value })
-                      }
-                      required={!editingUser}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Rol
+                      Opleiding *
                     </label>
                     <select
-                      value={formData.role}
+                      value={formData.programId}
                       onChange={(e) =>
-                        setFormData({ ...formData, role: e.target.value })
+                        setFormData({ ...formData, programId: e.target.value })
                       }
+                      required
                       className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     >
-                      <option value="STUDENT">Student</option>
-                      <option value="DOCENT">Docent</option>
-                      <option value="ADMIN">Beheerder</option>
+                      <option value="">Selecteer opleiding</option>
+                      {programs.map((program) => (
+                        <option key={program.id} value={program.id}>
+                          {program.name}
+                        </option>
+                      ))}
                     </select>
                   </div>
-
-                  {formData.role === 'DOCENT' && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Toegewezen opleidingen
-                      </label>
-                      <div className="space-y-2 max-h-48 overflow-y-auto border border-gray-300 rounded-md p-3">
-                        {programs.map((program) => (
-                          <label key={program.id} className="flex items-center">
-                            <input
-                              type="checkbox"
-                              checked={formData.programIds.includes(program.id)}
-                              onChange={() => handleProgramToggle(program.id)}
-                              className="mr-2"
-                            />
-                            <span className="text-sm">{program.name}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  )}
                 </div>
 
                 <div className="mt-6 flex justify-end gap-4">

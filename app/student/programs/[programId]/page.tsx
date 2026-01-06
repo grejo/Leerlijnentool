@@ -61,7 +61,7 @@ export default async function ProgramLearningLines({
                 {pl.learningLine.title}
               </h2>
               <p className="text-sm text-gray-500">
-                {pl.learningLine.components.length} component(en)
+                {(pl.learningLine.components && pl.learningLine.components.length) || 0} vakgebied(en)
               </p>
             </Link>
           ))}

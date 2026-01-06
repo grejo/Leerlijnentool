@@ -199,7 +199,7 @@ export default function LearningLinesManagement() {
                     Opleidingen
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Componenten
+                    Vakgebieden
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Acties

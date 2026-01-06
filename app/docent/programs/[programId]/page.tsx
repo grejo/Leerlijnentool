@@ -317,7 +317,7 @@ export default function DocentProgramManagement() {
                   Leerlijn
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Component
+                  Vakgebied
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                   Traject
@@ -388,7 +388,7 @@ export default function DocentProgramManagement() {
                         value={formData.learningLineId}
                         onChange={(e) => handleLearningLineChange(e.target.value)}
                         required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                       >
                         <option value="">Selecteer leerlijn</option>
                         {learningLines.map((ll) => (
@@ -401,7 +401,7 @@ export default function DocentProgramManagement() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Component *
+                        Vakgebied *
                       </label>
                       <select
                         value={formData.componentId}
@@ -410,9 +410,9 @@ export default function DocentProgramManagement() {
                         }
                         required
                         disabled={!formData.learningLineId}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md disabled:bg-gray-100"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 disabled:bg-gray-100 disabled:text-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                       >
-                        <option value="">Selecteer component</option>
+                        <option value="">Selecteer vakgebied</option>
                         {components.map((comp) => (
                           <option key={comp.id} value={comp.id}>
                             {comp.name}
@@ -431,7 +431,7 @@ export default function DocentProgramManagement() {
                           setFormData({ ...formData, trackId: e.target.value })
                         }
                         required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                       >
                         <option value="">Selecteer traject</option>
                         {tracks.map((track) => (
@@ -452,7 +452,7 @@ export default function DocentProgramManagement() {
                           setFormData({ ...formData, courseId: e.target.value })
                         }
                         required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                       >
                         <option value="">Selecteer vak</option>
                         {courses.map((course) => (

@@ -127,6 +127,16 @@ export default function AdminDashboard() {
           </Link>
 
           <Link
+            href="/admin/courses"
+            className="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 p-6 border border-gray-200"
+          >
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              Opleidingsonderdelen
+            </h2>
+            <p className="text-gray-600">Beheer vakken binnen opleidingen</p>
+          </Link>
+
+          <Link
             href="/admin/components"
             className="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 p-6 border border-gray-200"
           >

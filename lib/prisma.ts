@@ -125,13 +125,39 @@ const userModel = {
 // Program model
 const programModel = {
   async findUnique({ where, include }: { where: { id: string }; include?: any }) {
+    const withClause: any = {};
+
+    if (include) {
+      if (include.courses) {
+        withClause.courses = true;
+      }
+      if (include.learningLines) {
+        if (include.learningLines.include?.learningLine?.include?.components) {
+          withClause.learningLines = {
+            with: {
+              learningLine: {
+                with: {
+                  components: {
+                    orderBy: (components: any, { asc }: any) => [asc(components.order)],
+                  },
+                },
+              },
+            },
+          };
+        } else if (include.learningLines.include?.learningLine) {
+          withClause.learningLines = { with: { learningLine: true } };
+        } else {
+          withClause.learningLines = true;
+        }
+      }
+      if (include.users) {
+        withClause.users = { with: { user: true } };
+      }
+    }
+
     return db.query.programs.findFirst({
       where: eq(programs.id, where.id),
-      with: include ? {
-        courses: include.courses || undefined,
-        learningLines: include.learningLines ? { with: { learningLine: true } } : undefined,
-        users: include.users ? { with: { user: true } } : undefined,
-      } : undefined,
+      with: Object.keys(withClause).length > 0 ? withClause : undefined,
     });
   },
 
