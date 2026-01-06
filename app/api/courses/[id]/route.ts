@@ -9,22 +9,39 @@ export async function PUT(
 ) {
   const session = await getServerSession(authOptions)
 
-  if (!session || !['ADMIN', 'DOCENT'].includes(session.user.role)) {
+  if (!session || session.user.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const body = await request.json()
   const { name, programId } = body
 
-  const course = await prisma.course.update({
-    where: { id: params.id },
-    data: { name, programId },
-    include: {
-      program: true,
-    },
-  })
+  if (!name || !programId) {
+    return NextResponse.json(
+      { error: 'Naam en opleiding zijn verplicht' },
+      { status: 400 }
+    )
+  }
 
-  return NextResponse.json(course)
+  try {
+    const course = await prisma.course.update({
+      where: { id: params.id },
+      data: {
+        name,
+        programId,
+      },
+      include: {
+        program: true,
+      },
+    })
+
+    return NextResponse.json(course)
+  } catch (error) {
+    return NextResponse.json(
+      { error: 'Fout bij bijwerken opleidingsonderdeel' },
+      { status: 500 }
+    )
+  }
 }
 
 export async function DELETE(
@@ -37,9 +54,16 @@ export async function DELETE(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  await prisma.course.delete({
-    where: { id: params.id },
-  })
+  try {
+    await prisma.course.delete({
+      where: { id: params.id },
+    })
 
-  return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    return NextResponse.json(
+      { error: 'Fout bij verwijderen opleidingsonderdeel' },
+      { status: 500 }
+    )
+  }
 }
