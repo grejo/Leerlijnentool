@@ -5,6 +5,11 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
+
+const RichTextEditor = dynamic(() => import('@/components/RichTextEditor'), {
+  ssr: false,
+})
 
 interface Content {
   id: string
@@ -22,13 +27,47 @@ interface Program {
   name: string
 }
 
+interface LearningLine {
+  id: string
+  title: string
+}
+
+interface Component {
+  id: string
+  name: string
+}
+
+interface Track {
+  id: string
+  name: string
+}
+
+interface Course {
+  id: string
+  name: string
+}
+
 export default function ContentsManagement() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [contents, setContents] = useState<Content[]>([])
   const [programs, setPrograms] = useState<Program[]>([])
+  const [learningLines, setLearningLines] = useState<LearningLine[]>([])
+  const [components, setComponents] = useState<Component[]>([])
+  const [tracks, setTracks] = useState<Track[]>([])
+  const [courses, setCourses] = useState<Course[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedProgramId, setSelectedProgramId] = useState<string>('')
+  const [showModal, setShowModal] = useState(false)
+  const [editingContent, setEditingContent] = useState<Content | null>(null)
+  const [formData, setFormData] = useState({
+    richTextBody: '',
+    programId: '',
+    learningLineId: '',
+    componentId: '',
+    trackId: '',
+    courseId: '',
+  })
 
   useEffect(() => {
     if (status === 'loading') return
@@ -53,11 +92,16 @@ export default function ContentsManagement() {
 
   const fetchData = async () => {
     try {
-      const progRes = await fetch('/api/programs')
+      const [progRes, tracksRes] = await Promise.all([
+        fetch('/api/programs'),
+        fetch('/api/tracks'),
+      ])
       const progData = await progRes.json()
+      const tracksData = await tracksRes.json()
       setPrograms(progData)
+      setTracks(tracksData)
     } catch (error) {
-      console.error('Error fetching programs:', error)
+      console.error('Error fetching data:', error)
     } finally {
       setLoading(false)
     }
@@ -73,6 +117,134 @@ export default function ContentsManagement() {
       setContents(data)
     } catch (error) {
       console.error('Error fetching contents:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchLearningLines = async (programId: string) => {
+    try {
+      const res = await fetch(`/api/learning-lines?programId=${programId}`)
+      const data = await res.json()
+      setLearningLines(data)
+    } catch (error) {
+      console.error('Error fetching learning lines:', error)
+    }
+  }
+
+  const fetchComponents = async (learningLineId: string) => {
+    try {
+      const res = await fetch(`/api/components?learningLineId=${learningLineId}`)
+      const data = await res.json()
+      setComponents(data)
+    } catch (error) {
+      console.error('Error fetching components:', error)
+    }
+  }
+
+  const fetchCourses = async (programId: string) => {
+    try {
+      const res = await fetch(`/api/courses?programId=${programId}`)
+      const data = await res.json()
+      setCourses(data)
+    } catch (error) {
+      console.error('Error fetching courses:', error)
+    }
+  }
+
+  const handleOpenModal = (content?: Content) => {
+    if (content) {
+      setEditingContent(content)
+      setFormData({
+        richTextBody: content.richTextBody,
+        programId: content.program.id,
+        learningLineId: content.learningLine.id,
+        componentId: content.component.id,
+        trackId: content.track.id,
+        courseId: content.course.id,
+      })
+      fetchLearningLines(content.program.id)
+      fetchComponents(content.learningLine.id)
+      fetchCourses(content.program.id)
+    } else {
+      setEditingContent(null)
+      setFormData({
+        richTextBody: '',
+        programId: selectedProgramId || '',
+        learningLineId: '',
+        componentId: '',
+        trackId: '',
+        courseId: '',
+      })
+      if (selectedProgramId) {
+        fetchLearningLines(selectedProgramId)
+        fetchCourses(selectedProgramId)
+      }
+    }
+    setShowModal(true)
+  }
+
+  const handleCloseModal = () => {
+    setShowModal(false)
+    setEditingContent(null)
+    setFormData({
+      richTextBody: '',
+      programId: '',
+      learningLineId: '',
+      componentId: '',
+      trackId: '',
+      courseId: '',
+    })
+  }
+
+  const handleProgramChange = (programId: string) => {
+    setFormData({ ...formData, programId, learningLineId: '', componentId: '', courseId: '' })
+    fetchLearningLines(programId)
+    fetchCourses(programId)
+    setComponents([])
+  }
+
+  const handleLearningLineChange = (learningLineId: string) => {
+    setFormData({ ...formData, learningLineId, componentId: '' })
+    fetchComponents(learningLineId)
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+
+    try {
+      if (editingContent) {
+        const res = await fetch(`/api/contents/${editingContent.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        })
+
+        if (!res.ok) {
+          const error = await res.json()
+          alert(error.error || 'Fout bij bijwerken inhoud')
+          return
+        }
+      } else {
+        const res = await fetch('/api/contents', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        })
+
+        if (!res.ok) {
+          const error = await res.json()
+          alert(error.error || 'Fout bij aanmaken inhoud')
+          return
+        }
+      }
+
+      await fetchContents()
+      handleCloseModal()
+    } catch (error) {
+      console.error('Error saving content:', error)
+      alert('Er is een fout opgetreden')
     } finally {
       setLoading(false)
     }
@@ -116,15 +288,23 @@ export default function ContentsManagement() {
       <Navbar userName={session.user.email || ''} userRole={session.user.role} />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <Link
-            href="/admin"
-            className="text-blue-600 hover:text-blue-800 mb-4 inline-block"
+        <div className="mb-8 flex justify-between items-center">
+          <div>
+            <Link
+              href="/admin"
+              className="text-blue-600 hover:text-blue-800 mb-4 inline-block"
+            >
+              ← Terug naar dashboard
+            </Link>
+            <h1 className="text-3xl font-bold text-gray-900">Leerinhoud Overzicht</h1>
+            <p className="text-gray-600 mt-2">Beheer alle leerinhoud per opleiding</p>
+          </div>
+          <button
+            onClick={() => handleOpenModal()}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
           >
-            ← Terug naar dashboard
-          </Link>
-          <h1 className="text-3xl font-bold text-gray-900">Leerinhoud Overzicht</h1>
-          <p className="text-gray-600 mt-2">Bekijk en beheer alle leerinhoud per opleiding</p>
+            + Nieuwe inhoud
+          </button>
         </div>
 
         {/* Program Filter */}
@@ -162,7 +342,7 @@ export default function ContentsManagement() {
                     Leerlijn
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Component
+                    Vakgebied
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Traject
@@ -198,6 +378,12 @@ export default function ContentsManagement() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <button
+                        onClick={() => handleOpenModal(content)}
+                        className="text-blue-600 hover:text-blue-800 mr-4"
+                      >
+                        Bewerken
+                      </button>
+                      <button
                         onClick={() => handleDelete(content.id)}
                         className="text-red-600 hover:text-red-800"
                       >
@@ -208,6 +394,155 @@ export default function ContentsManagement() {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {/* Content Modal */}
+        {showModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <h2 className="text-2xl font-bold mb-4">
+                {editingContent ? 'Inhoud bewerken' : 'Nieuwe inhoud'}
+              </h2>
+              <form onSubmit={handleSubmit}>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Opleiding *
+                      </label>
+                      <select
+                        value={formData.programId}
+                        onChange={(e) => handleProgramChange(e.target.value)}
+                        required
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      >
+                        <option value="">Selecteer opleiding</option>
+                        {programs.map((program) => (
+                          <option key={program.id} value={program.id}>
+                            {program.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Leerlijn *
+                      </label>
+                      <select
+                        value={formData.learningLineId}
+                        onChange={(e) => handleLearningLineChange(e.target.value)}
+                        required
+                        disabled={!formData.programId}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md disabled:bg-gray-100"
+                      >
+                        <option value="">Selecteer leerlijn</option>
+                        {learningLines.map((ll) => (
+                          <option key={ll.id} value={ll.id}>
+                            {ll.title}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Vakgebied *
+                      </label>
+                      <select
+                        value={formData.componentId}
+                        onChange={(e) =>
+                          setFormData({ ...formData, componentId: e.target.value })
+                        }
+                        required
+                        disabled={!formData.learningLineId}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md disabled:bg-gray-100"
+                      >
+                        <option value="">Selecteer vakgebied</option>
+                        {components.map((comp) => (
+                          <option key={comp.id} value={comp.id}>
+                            {comp.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Leertraject *
+                      </label>
+                      <select
+                        value={formData.trackId}
+                        onChange={(e) =>
+                          setFormData({ ...formData, trackId: e.target.value })
+                        }
+                        required
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      >
+                        <option value="">Selecteer traject</option>
+                        {tracks.map((track) => (
+                          <option key={track.id} value={track.id}>
+                            {track.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Opleidingsonderdeel *
+                      </label>
+                      <select
+                        value={formData.courseId}
+                        onChange={(e) =>
+                          setFormData({ ...formData, courseId: e.target.value })
+                        }
+                        required
+                        disabled={!formData.programId}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md disabled:bg-gray-100"
+                      >
+                        <option value="">Selecteer vak</option>
+                        {courses.map((course) => (
+                          <option key={course.id} value={course.id}>
+                            {course.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Inhoud *
+                    </label>
+                    <RichTextEditor
+                      content={formData.richTextBody}
+                      onChange={(html) =>
+                        setFormData({ ...formData, richTextBody: html })
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-6 flex justify-end gap-4">
+                  <button
+                    type="button"
+                    onClick={handleCloseModal}
+                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                  >
+                    Annuleren
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400"
+                  >
+                    {loading ? 'Opslaan...' : 'Opslaan'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         )}
       </div>
