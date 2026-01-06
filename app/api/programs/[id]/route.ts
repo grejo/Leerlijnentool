@@ -3,6 +3,42 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const session = await getServerSession(authOptions)
+
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const program = await prisma.program.findUnique({
+    where: { id: params.id },
+    include: {
+      learningLines: {
+        include: {
+          learningLine: {
+            include: {
+              components: {
+                orderBy: {
+                  order: 'asc',
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+
+  if (!program) {
+    return NextResponse.json({ error: 'Program not found' }, { status: 404 })
+  }
+
+  return NextResponse.json(program)
+}
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
