@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
+import TimelineVisualization from '@/components/TimelineVisualization'
 
 interface Track {
   id: string
@@ -42,6 +43,7 @@ export default function ContentView() {
   const [selectedCourseId, setSelectedCourseId] = useState<string>('')
   const [loading, setLoading] = useState(true)
   const [expandedComponents, setExpandedComponents] = useState<Set<string>>(new Set())
+  const [showTimeline, setShowTimeline] = useState(false)
 
   useEffect(() => {
     fetchData()
@@ -117,9 +119,34 @@ export default function ContentView() {
           <h1 className="text-4xl font-heading font-black text-pxl-black accent-gold">Leerinhoud</h1>
         </div>
 
-        {/* Filters */}
+        {/* Toggle View and Filters */}
         <div className="card-pxl mb-6">
-          <h2 className="text-xl font-heading font-bold text-pxl-black mb-6">Filters</h2>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-heading font-bold text-pxl-black">Filters</h2>
+
+            {/* Toggle Button */}
+            <button
+              onClick={() => setShowTimeline(!showTimeline)}
+              className={`flex items-center gap-3 px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
+                showTimeline
+                  ? 'bg-pxl-gold text-pxl-black shadow-pxl-hover'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <span className="text-sm font-heading">
+                {showTimeline ? 'Toon Standaardweergave' : 'Toon Leertraject Visualisatie'}
+              </span>
+              <svg
+                className={`w-5 h-5 transition-transform duration-200 ${showTimeline ? 'rotate-180' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="label-pxl">
@@ -159,11 +186,13 @@ export default function ContentView() {
           </div>
         </div>
 
-        {/* Content grouped by Component */}
+        {/* Content Display - Timeline or Standard View */}
         {loading ? (
           <div className="card-pxl text-center">
             <p className="text-gray-600">Laden...</p>
           </div>
+        ) : showTimeline ? (
+          <TimelineVisualization contents={contents} tracks={tracks} />
         ) : Object.keys(groupedContents).length === 0 ? (
           <div className="card-pxl text-center">
             <p className="text-gray-600">Geen inhoud gevonden met de geselecteerde filters.</p>
