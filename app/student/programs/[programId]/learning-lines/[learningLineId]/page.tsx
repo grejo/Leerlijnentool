@@ -103,32 +103,32 @@ export default function ContentView() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-pxl-white">
       <Navbar userName={session.user.email || ''} userRole={session.user.role} />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
+      <div className="container-pxl section-pxl">
+        <div className="mb-12">
           <Link
             href={`/student/programs/${programId}`}
-            className="text-blue-600 hover:text-blue-800 mb-4 inline-block"
+            className="link-pxl mb-4 inline-block"
           >
             ← Terug naar leerlijnen
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900">Leerinhoud</h1>
+          <h1 className="text-4xl font-heading font-black text-pxl-black accent-gold">Leerinhoud</h1>
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Filters</h2>
+        <div className="card-pxl mb-6">
+          <h2 className="text-xl font-heading font-bold text-pxl-black mb-6">Filters</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="label-pxl">
                 Leertraject
               </label>
               <select
                 value={selectedTrackId}
                 onChange={(e) => setSelectedTrackId(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="select-pxl"
               >
                 <option value="">Alle trajecten</option>
                 {tracks.map((track) => (
@@ -140,13 +140,13 @@ export default function ContentView() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="label-pxl">
                 Opleidingsonderdeel
               </label>
               <select
                 value={selectedCourseId}
                 onChange={(e) => setSelectedCourseId(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="select-pxl"
               >
                 <option value="">Alle onderdelen</option>
                 {courses.map((course) => (
@@ -161,46 +161,46 @@ export default function ContentView() {
 
         {/* Content grouped by Component */}
         {loading ? (
-          <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-            <p className="text-gray-500">Laden...</p>
+          <div className="card-pxl text-center">
+            <p className="text-gray-600">Laden...</p>
           </div>
         ) : Object.keys(groupedContents).length === 0 ? (
-          <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-            <p className="text-gray-500">Geen inhoud gevonden met de geselecteerde filters.</p>
+          <div className="card-pxl text-center">
+            <p className="text-gray-600">Geen inhoud gevonden met de geselecteerde filters.</p>
           </div>
         ) : (
           <div className="space-y-4">
             {Object.values(groupedContents).map(({ component, contents }) => (
-              <div key={component.id} className="bg-white rounded-lg shadow-sm overflow-hidden">
+              <div key={component.id} className="card-pxl overflow-hidden">
                 <button
                   onClick={() => toggleComponent(component.id)}
-                  className="w-full px-6 py-4 text-left bg-gray-50 hover:bg-gray-100 transition-colors flex justify-between items-center"
+                  className="w-full px-6 py-4 -mx-6 -mt-6 mb-4 text-left bg-gray-50 hover:bg-gray-100 transition-colors flex justify-between items-center border-b-2 border-pxl-gold"
                 >
-                  <h3 className="text-lg font-semibold text-gray-900">
+                  <h3 className="text-lg font-heading font-bold text-pxl-black">
                     {component.name}
                   </h3>
-                  <span className="text-gray-500">
+                  <span className="text-pxl-gold text-xl font-bold">
                     {expandedComponents.has(component.id) ? '▼' : '▶'}
                   </span>
                 </button>
 
                 {expandedComponents.has(component.id) && (
-                  <div className="p-6 space-y-4">
+                  <div className="space-y-4">
                     {contents.map((content) => (
                       <div
                         key={content.id}
-                        className="border-l-4 border-blue-500 pl-4 py-2"
+                        className="border-l-4 border-pxl-gold pl-4 py-2"
                       >
-                        <div className="flex items-center gap-2 mb-2 text-sm text-gray-600">
-                          <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                        <div className="flex items-center gap-2 mb-2 text-sm">
+                          <span className="bg-gray-100 text-pxl-black px-2 py-1 rounded font-medium">
                             {content.course.name}
                           </span>
-                          <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded">
+                          <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded">
                             {content.track.name}
                           </span>
                         </div>
                         <div
-                          className="content-display text-gray-800"
+                          className="content-display text-pxl-black"
                           dangerouslySetInnerHTML={{ __html: content.richTextBody }}
                         />
                       </div>

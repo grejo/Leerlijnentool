@@ -637,7 +637,16 @@ const contentModel = {
 };
 
 // Export prisma-compatible interface
-export const prisma = {
+export const prisma: {
+  user: typeof userModel;
+  program: typeof programModel;
+  course: typeof courseModel;
+  learningLine: typeof learningLineModel;
+  track: typeof trackModel;
+  component: typeof componentModel;
+  content: typeof contentModel;
+  $transaction: <T>(fn: (tx: any) => Promise<T>) => Promise<T>;
+} = {
   user: userModel,
   program: programModel,
   course: courseModel,
@@ -645,7 +654,7 @@ export const prisma = {
   track: trackModel,
   component: componentModel,
   content: contentModel,
-  $transaction: async <T>(fn: (tx: typeof prisma) => Promise<T>): Promise<T> => {
+  $transaction: async <T>(fn: (tx: any) => Promise<T>): Promise<T> => {
     // Simple implementation - Drizzle handles transactions differently
     return fn(prisma);
   },

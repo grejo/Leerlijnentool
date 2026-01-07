@@ -277,31 +277,31 @@ export default function DocentProgramManagement() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-pxl-white">
       <Navbar userName={session.user.email || ''} userRole={session.user.role} />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
+      <div className="container-pxl section-pxl">
+        <div className="mb-12">
           <Link
             href="/docent"
-            className="text-blue-600 hover:text-blue-800 mb-4 inline-block"
+            className="link-pxl mb-4 inline-block"
           >
             ← Terug naar dashboard
           </Link>
           <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-4xl font-heading font-black text-pxl-black accent-gold">
               {program?.name} - Inhoudsbeheer
             </h1>
             <div className="flex gap-4">
               <button
                 onClick={() => setShowBulkModal(true)}
-                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                className="btn-pxl-secondary"
               >
                 Bulk Import
               </button>
               <button
                 onClick={() => handleOpenModal()}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                className="btn-pxl-primary"
               >
                 + Nieuwe inhoud
               </button>
@@ -309,52 +309,34 @@ export default function DocentProgramManagement() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+        <div className="card-pxl overflow-hidden">
+          <table className="table-pxl">
+            <thead>
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Leerlijn
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Vakgebied
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Traject
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Vak
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Acties
-                </th>
+                <th>Leerlijn</th>
+                <th>Vakgebied</th>
+                <th>Traject</th>
+                <th>Vak</th>
+                <th>Acties</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody>
               {contents.map((content) => (
                 <tr key={content.id}>
-                  <td className="px-6 py-4 text-sm text-gray-900">
-                    {content.learningLine.title}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900">
-                    {content.component.name}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900">
-                    {content.track.name}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900">
-                    {content.course.name}
-                  </td>
-                  <td className="px-6 py-4 text-sm">
+                  <td>{content.learningLine.title}</td>
+                  <td>{content.component.name}</td>
+                  <td>{content.track.name}</td>
+                  <td>{content.course.name}</td>
+                  <td>
                     <button
                       onClick={() => handleOpenModal(content)}
-                      className="text-blue-600 hover:text-blue-800 mr-4"
+                      className="link-pxl mr-4"
                     >
                       Bewerken
                     </button>
                     <button
                       onClick={() => handleDelete(content.id)}
-                      className="text-red-600 hover:text-red-800"
+                      className="text-red-600 hover:text-red-800 font-medium"
                     >
                       Verwijderen
                     </button>
@@ -364,7 +346,7 @@ export default function DocentProgramManagement() {
             </tbody>
           </table>
           {contents.length === 0 && (
-            <div className="p-8 text-center text-gray-500">
+            <div className="p-8 text-center text-gray-600">
               Nog geen inhoud aangemaakt
             </div>
           )}
@@ -373,22 +355,22 @@ export default function DocentProgramManagement() {
         {/* Content Modal */}
         {showModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-              <h2 className="text-2xl font-bold mb-4">
+            <div className="bg-white rounded-pxl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-pxl-lift">
+              <h2 className="text-2xl font-heading font-black text-pxl-black mb-6 accent-gold">
                 {editingContent ? 'Inhoud bewerken' : 'Nieuwe inhoud'}
               </h2>
               <form onSubmit={handleSubmit}>
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="label-pxl">
                         Leerlijn *
                       </label>
                       <select
                         value={formData.learningLineId}
                         onChange={(e) => handleLearningLineChange(e.target.value)}
                         required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        className="select-pxl"
                       >
                         <option value="">Selecteer leerlijn</option>
                         {learningLines.map((ll) => (
@@ -400,7 +382,7 @@ export default function DocentProgramManagement() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="label-pxl">
                         Vakgebied *
                       </label>
                       <select
@@ -410,7 +392,7 @@ export default function DocentProgramManagement() {
                         }
                         required
                         disabled={!formData.learningLineId}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 disabled:bg-gray-100 disabled:text-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        className="select-pxl disabled:bg-gray-100 disabled:text-gray-500"
                       >
                         <option value="">Selecteer vakgebied</option>
                         {components.map((comp) => (
@@ -422,7 +404,7 @@ export default function DocentProgramManagement() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="label-pxl">
                         Leertraject *
                       </label>
                       <select
@@ -431,7 +413,7 @@ export default function DocentProgramManagement() {
                           setFormData({ ...formData, trackId: e.target.value })
                         }
                         required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        className="select-pxl"
                       >
                         <option value="">Selecteer traject</option>
                         {tracks.map((track) => (
@@ -443,7 +425,7 @@ export default function DocentProgramManagement() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="label-pxl">
                         Opleidingsonderdeel *
                       </label>
                       <select
@@ -452,7 +434,7 @@ export default function DocentProgramManagement() {
                           setFormData({ ...formData, courseId: e.target.value })
                         }
                         required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        className="select-pxl"
                       >
                         <option value="">Selecteer vak</option>
                         {courses.map((course) => (
@@ -465,7 +447,7 @@ export default function DocentProgramManagement() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="label-pxl">
                       Inhoud *
                     </label>
                     <RichTextEditor
@@ -481,14 +463,14 @@ export default function DocentProgramManagement() {
                   <button
                     type="button"
                     onClick={handleCloseModal}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                    className="btn-pxl-outline"
                   >
                     Annuleren
                   </button>
                   <button
                     type="submit"
                     disabled={loading}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400"
+                    className="btn-pxl-primary disabled:opacity-50"
                   >
                     {loading ? 'Opslaan...' : 'Opslaan'}
                   </button>
@@ -501,13 +483,13 @@ export default function DocentProgramManagement() {
         {/* Bulk Import Modal */}
         {showBulkModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-              <h2 className="text-2xl font-bold mb-4">Bulk Import Inhoud</h2>
+            <div className="bg-white rounded-pxl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-pxl-lift">
+              <h2 className="text-2xl font-heading font-black text-pxl-black mb-6 accent-gold">Bulk Import Inhoud</h2>
               <div className="mb-4">
                 <p className="text-sm text-gray-600 mb-2">
                   Plak JSON-gegevens in het onderstaande veld. Formaat:
                 </p>
-                <pre className="bg-gray-100 p-3 rounded text-xs overflow-x-auto">
+                <pre className="bg-gray-100 p-3 rounded-pxl text-xs overflow-x-auto border-l-4 border-pxl-gold">
 {`[
   {
     "richTextBody": "<p>Inhoud hier</p>",
@@ -523,7 +505,7 @@ export default function DocentProgramManagement() {
               <textarea
                 value={bulkData}
                 onChange={(e) => setBulkData(e.target.value)}
-                className="w-full h-64 px-3 py-2 border border-gray-300 rounded-md font-mono text-sm"
+                className="input-pxl w-full h-64 font-mono text-sm"
                 placeholder="Plak JSON hier..."
               />
               <div className="mt-6 flex justify-end gap-4">
@@ -532,14 +514,14 @@ export default function DocentProgramManagement() {
                     setShowBulkModal(false)
                     setBulkData('')
                   }}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                  className="btn-pxl-outline"
                 >
                   Annuleren
                 </button>
                 <button
                   onClick={handleBulkImport}
                   disabled={loading || !bulkData}
-                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400"
+                  className="btn-pxl-primary disabled:opacity-50"
                 >
                   {loading ? 'Importeren...' : 'Importeren'}
                 </button>

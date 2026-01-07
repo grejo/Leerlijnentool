@@ -53,27 +53,29 @@ export default function AdminDashboard() {
         onClearViewAs={clearViewAs}
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Beheerdersdashboard</h1>
-          <p className="mt-2 text-gray-600">Welkom, beheerder</p>
+      <div className="container-pxl section-pxl">
+        <div className="mb-12">
+          <h1 className="text-4xl font-heading font-black text-pxl-black accent-gold">
+            Beheerdersdashboard
+          </h1>
+          <p className="mt-4 text-lg text-gray-600">Welkom, beheerder</p>
         </div>
 
         {/* View As Section */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+        <div className="card-pxl mb-12">
+          <h2 className="text-2xl font-heading font-black text-pxl-black mb-6">
             Bekijk als andere rol
           </h2>
           <div className="flex gap-4">
             <button
               onClick={() => handleViewAs('DOCENT')}
-              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+              className="btn-pxl-secondary"
             >
               Bekijk als Docent
             </button>
             <button
               onClick={() => handleViewAs('STUDENT')}
-              className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+              className="btn-pxl-secondary"
             >
               Bekijk als Student
             </button>
@@ -84,9 +86,9 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Link
             href="/admin/users"
-            className="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 p-6 border border-gray-200"
+            className="card-pxl-hover block"
           >
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            <h2 className="text-xl font-heading font-bold text-pxl-black mb-3">
               Gebruikersbeheer
             </h2>
             <p className="text-gray-600">
@@ -96,9 +98,9 @@ export default function AdminDashboard() {
 
           <Link
             href="/admin/programs"
-            className="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 p-6 border border-gray-200"
+            className="card-pxl-hover block"
           >
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            <h2 className="text-xl font-heading font-bold text-pxl-black mb-3">
               Opleidingen
             </h2>
             <p className="text-gray-600">Beheer opleidingen en koppel docenten</p>
@@ -106,9 +108,9 @@ export default function AdminDashboard() {
 
           <Link
             href="/admin/learning-lines"
-            className="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 p-6 border border-gray-200"
+            className="card-pxl-hover block"
           >
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            <h2 className="text-xl font-heading font-bold text-pxl-black mb-3">
               Leerlijnen
             </h2>
             <p className="text-gray-600">
@@ -118,9 +120,9 @@ export default function AdminDashboard() {
 
           <Link
             href="/admin/tracks"
-            className="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 p-6 border border-gray-200"
+            className="card-pxl-hover block"
           >
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            <h2 className="text-xl font-heading font-bold text-pxl-black mb-3">
               Leertrajecten
             </h2>
             <p className="text-gray-600">Beheer leertrajecten (jaren/fases)</p>
@@ -128,9 +130,9 @@ export default function AdminDashboard() {
 
           <Link
             href="/admin/courses"
-            className="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 p-6 border border-gray-200"
+            className="card-pxl-hover block"
           >
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            <h2 className="text-xl font-heading font-bold text-pxl-black mb-3">
               Opleidingsonderdelen
             </h2>
             <p className="text-gray-600">Beheer vakken binnen opleidingen</p>
@@ -138,9 +140,9 @@ export default function AdminDashboard() {
 
           <Link
             href="/admin/components"
-            className="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 p-6 border border-gray-200"
+            className="card-pxl-hover block"
           >
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            <h2 className="text-xl font-heading font-bold text-pxl-black mb-3">
               Vakgebieden
             </h2>
             <p className="text-gray-600">Beheer vakgebieden binnen leerlijnen</p>
@@ -148,9 +150,9 @@ export default function AdminDashboard() {
 
           <Link
             href="/admin/contents"
-            className="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 p-6 border border-gray-200"
+            className="card-pxl-hover block"
           >
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            <h2 className="text-xl font-heading font-bold text-pxl-black mb-3">
               Leerinhoud
             </h2>
             <p className="text-gray-600">Beheer en bekijk alle leerinhoud</p>

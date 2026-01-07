@@ -2,28 +2,96 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import PXL Fonts */
+@import url('https://use.typekit.net/wyn4qie.css');
+
+/* PXL Brand Color Variables */
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+  --pxl-black: #030203;
+  --pxl-white: #FFFFFF;
+  --pxl-gold: #AE9A64;
+
+  /* Font Variables */
+  --font-museo-sans: 'museo-sans', Arial, sans-serif;
+  --font-raleway: 'Raleway', Arial, sans-serif;
+
+  /* Spacing system (8px grid) */
+  --spacing-xs: 8px;
+  --spacing-sm: 16px;
+  --spacing-md: 24px;
+  --spacing-lg: 32px;
+  --spacing-xl: 48px;
+  --spacing-2xl: 64px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
+/* Reset and Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  font-family: var(--font-museo-sans);
+  font-size: 1rem;
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--pxl-black);
+  background-color: var(--pxl-white);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-raleway);
+  font-weight: 900;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+  color: var(--pxl-black);
+}
+
+h1 {
+  font-size: 2.5rem;
+}
+
+h2 {
+  font-size: 2rem;
+}
+
+h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+h4 {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+h5 {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+h6 {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+/* Mobile Typography */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2rem;
+  }
+
+  h2 {
+    font-size: 1.75rem;
+  }
+
+  h3 {
+    font-size: 1.375rem;
+  }
 }
 
 @layer utilities {
@@ -32,44 +100,182 @@ body {
   }
 }
 
-/* TipTap Editor Styles */
+/* PXL Component Styles */
+@layer components {
+  /* Buttons */
+  .btn-pxl-primary {
+    @apply px-6 py-3 bg-pxl-gold text-pxl-black font-medium rounded-lg;
+    @apply transition-all duration-200 ease-in-out;
+    @apply hover:shadow-pxl-hover hover:-translate-y-0.5;
+    @apply focus:outline-none focus:ring-2 focus:ring-pxl-gold focus:ring-offset-2;
+  }
+
+  .btn-pxl-secondary {
+    @apply px-6 py-3 bg-white text-pxl-black font-medium rounded-lg border-2 border-pxl-black;
+    @apply transition-all duration-200 ease-in-out;
+    @apply hover:bg-pxl-gold hover:border-pxl-gold;
+    @apply focus:outline-none focus:ring-2 focus:ring-pxl-gold focus:ring-offset-2;
+  }
+
+  .btn-pxl-outline {
+    @apply px-6 py-3 bg-transparent text-pxl-black font-medium rounded-lg border border-pxl-black;
+    @apply transition-all duration-200 ease-in-out;
+    @apply hover:bg-pxl-black hover:text-white;
+    @apply focus:outline-none focus:ring-2 focus:ring-pxl-black focus:ring-offset-2;
+  }
+
+  /* Cards */
+  .card-pxl {
+    @apply bg-white rounded-pxl shadow-pxl-card p-6 md:p-8;
+    @apply transition-all duration-200;
+    @apply border-t-4 border-pxl-gold;
+  }
+
+  .card-pxl-hover {
+    @apply card-pxl;
+    @apply hover:shadow-pxl-hover hover:-translate-y-1;
+  }
+
+  /* Links */
+  .link-pxl {
+    @apply text-pxl-black font-medium;
+    @apply transition-all duration-200;
+    @apply hover:text-pxl-gold;
+    @apply border-b-2 border-transparent hover:border-pxl-gold;
+  }
+
+  /* Forms */
+  .input-pxl {
+    @apply w-full px-4 py-3 border border-gray-300 rounded-lg;
+    @apply text-pxl-black bg-white;
+    @apply transition-all duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-pxl-gold focus:border-pxl-gold;
+  }
+
+  .select-pxl {
+    @apply input-pxl;
+    @apply appearance-none bg-no-repeat bg-right;
+  }
+
+  .label-pxl {
+    @apply block text-sm font-medium text-pxl-black mb-2;
+  }
+
+  /* Sections */
+  .section-pxl {
+    @apply py-16 md:py-24;
+  }
+
+  .container-pxl {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Hero */
+  .hero-pxl {
+    @apply relative overflow-hidden;
+  }
+
+  .hero-pxl::after {
+    content: '';
+    @apply absolute bottom-0 left-0 w-full h-12 bg-white;
+    clip-path: ellipse(100% 100% at 50% 100%);
+  }
+
+  /* Gold Accent Line */
+  .accent-gold {
+    @apply border-b-4 border-pxl-gold pb-3;
+  }
+
+  /* Table */
+  .table-pxl {
+    @apply min-w-full divide-y divide-gray-200;
+  }
+
+  .table-pxl thead {
+    @apply bg-pxl-black;
+  }
+
+  .table-pxl th {
+    @apply px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider;
+  }
+
+  .table-pxl td {
+    @apply px-6 py-4 whitespace-nowrap text-sm text-pxl-black;
+  }
+
+  .table-pxl tbody tr {
+    @apply transition-colors duration-150;
+    @apply hover:bg-gray-50;
+  }
+}
+
+/* PXL Utility Classes */
+@layer utilities {
+  .text-pxl-heading {
+    font-family: var(--font-raleway);
+    font-weight: 900;
+  }
+
+  .shadow-pxl-lift {
+    box-shadow: 0 4px 6px rgba(3, 2, 3, 0.1);
+  }
+
+  .bg-gradient-pxl {
+    background: linear-gradient(135deg, var(--pxl-black) 0%, #1a1718 100%);
+  }
+}
+
+/* TipTap Editor Styles - PXL Design */
 .ProseMirror {
   min-height: 200px;
-  padding: 12px;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.375rem;
+  padding: 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
   outline: none;
+  font-family: var(--font-museo-sans);
+  color: var(--pxl-black);
+  background-color: var(--pxl-white);
+  transition: all 0.2s ease-in-out;
 }
 
 .ProseMirror:focus {
-  border-color: #3b82f6;
-  ring: 2px;
-  ring-color: #3b82f6;
-  ring-opacity: 0.5;
+  border-color: var(--pxl-gold);
+  box-shadow: 0 0 0 3px rgba(174, 154, 100, 0.1);
 }
 
 .ProseMirror h1 {
-  font-size: 2em;
-  font-weight: bold;
+  font-family: var(--font-raleway);
+  font-size: 2.5rem;
+  font-weight: 900;
+  line-height: 1.2;
   margin-top: 0.67em;
   margin-bottom: 0.67em;
+  color: var(--pxl-black);
 }
 
 .ProseMirror h2 {
-  font-size: 1.5em;
-  font-weight: bold;
+  font-family: var(--font-raleway);
+  font-size: 2rem;
+  font-weight: 900;
+  line-height: 1.2;
   margin-top: 0.83em;
   margin-bottom: 0.83em;
+  color: var(--pxl-black);
 }
 
 .ProseMirror h3 {
-  font-size: 1.17em;
-  font-weight: bold;
+  font-family: var(--font-raleway);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
   margin-top: 1em;
   margin-bottom: 1em;
+  color: var(--pxl-black);
 }
 
 .ProseMirror p {
+  font-weight: 300;
+  line-height: 1.6;
   margin-top: 0.5em;
   margin-bottom: 0.5em;
 }
@@ -90,7 +296,7 @@ body {
 }
 
 .ProseMirror strong {
-  font-weight: bold;
+  font-weight: 700;
 }
 
 .ProseMirror em {
@@ -99,31 +305,44 @@ body {
 
 .ProseMirror u {
   text-decoration: underline;
+  text-decoration-color: var(--pxl-gold);
+  text-decoration-thickness: 2px;
 }
 
-/* Content Display Styles */
+/* Content Display Styles - PXL Design */
 .content-display h1 {
-  font-size: 2em;
-  font-weight: bold;
+  font-family: var(--font-raleway);
+  font-size: 2.5rem;
+  font-weight: 900;
+  line-height: 1.2;
   margin-top: 0.67em;
   margin-bottom: 0.67em;
+  color: var(--pxl-black);
 }
 
 .content-display h2 {
-  font-size: 1.5em;
-  font-weight: bold;
+  font-family: var(--font-raleway);
+  font-size: 2rem;
+  font-weight: 900;
+  line-height: 1.2;
   margin-top: 0.83em;
   margin-bottom: 0.83em;
+  color: var(--pxl-black);
 }
 
 .content-display h3 {
-  font-size: 1.17em;
-  font-weight: bold;
+  font-family: var(--font-raleway);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
   margin-top: 1em;
   margin-bottom: 1em;
+  color: var(--pxl-black);
 }
 
 .content-display p {
+  font-weight: 300;
+  line-height: 1.6;
   margin-top: 0.5em;
   margin-bottom: 0.5em;
 }
@@ -144,7 +363,7 @@ body {
 }
 
 .content-display strong {
-  font-weight: bold;
+  font-weight: 700;
 }
 
 .content-display em {
@@ -153,4 +372,6 @@ body {
 
 .content-display u {
   text-decoration: underline;
+  text-decoration-color: var(--pxl-gold);
+  text-decoration-thickness: 2px;
 }
