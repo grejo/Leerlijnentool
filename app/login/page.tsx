@@ -4,27 +4,57 @@ import { signIn } from 'next-auth/react'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
+type Role = 'ADMIN' | 'DOCENT' | 'STUDENT'
+
+interface RoleOption {
+  role: Role
+  title: string
+  description: string
+  icon: string
+  color: string
+}
+
+const roleOptions: RoleOption[] = [
+  {
+    role: 'ADMIN',
+    title: 'Beheerder',
+    description: 'Beheer gebruikers, opleidingen en alle inhoud',
+    icon: '⚙️',
+    color: 'bg-pxl-black hover:bg-gray-800',
+  },
+  {
+    role: 'DOCENT',
+    title: 'Docent',
+    description: 'Maak en beheer leerinhoud voor je vakken',
+    icon: '📚',
+    color: 'bg-pxl-green hover:bg-green-700',
+  },
+  {
+    role: 'STUDENT',
+    title: 'Student',
+    description: 'Bekijk leerlijnen en leerinhoud',
+    icon: '🎓',
+    color: 'bg-pxl-gold hover:bg-yellow-600',
+  },
+]
+
 export default function LoginPage() {
   const router = useRouter()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState<Role | null>(null)
   const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleRoleSelect = async (role: Role) => {
     setError('')
-    setLoading(true)
+    setLoading(role)
 
     try {
       const result = await signIn('credentials', {
         redirect: false,
-        email,
-        password,
+        role: role,
       })
 
       if (result?.error) {
-        setError(result.error)
+        setError('Er is een fout opgetreden. Probeer het opnieuw.')
       } else {
         router.push('/')
         router.refresh()
@@ -32,101 +62,78 @@ export default function LoginPage() {
     } catch (err) {
       setError('Er is een fout opgetreden. Probeer het opnieuw.')
     } finally {
-      setLoading(false)
+      setLoading(null)
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-pxl-white">
-      <div className="w-full max-w-md px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pxl-white to-gray-100">
+      <div className="w-full max-w-2xl px-4 py-8">
         {/* PXL Logo/Header Section */}
-        <div className="text-center mb-8">
-          <div className="inline-block bg-pxl-black rounded-full w-20 h-20 flex items-center justify-center mb-6">
-            <span className="text-pxl-white text-3xl font-heading font-black">PXL</span>
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center justify-center bg-pxl-black rounded-2xl w-24 h-24 mb-6 shadow-lg">
+            <span className="text-pxl-white text-4xl font-heading font-black">PXL</span>
           </div>
-          <h1 className="text-4xl font-heading font-black text-pxl-black mb-2">
+          <h1 className="text-5xl font-heading font-black text-pxl-black mb-3">
             Leerlijnentool
           </h1>
-          <div className="w-16 h-1 bg-pxl-gold mx-auto mb-4"></div>
-          <p className="text-pxl-black font-light">
-            Log in met uw gegevens
+          <div className="w-20 h-1.5 bg-pxl-gold mx-auto mb-6 rounded-full"></div>
+          <p className="text-xl text-gray-600 font-light">
+            Selecteer je rol om verder te gaan
           </p>
         </div>
 
-        {/* Login Card */}
-        <div className="card-pxl">
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            {error && (
-              <div className="bg-red-50 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded">
-                <p className="font-medium">Fout</p>
-                <p className="text-sm">{error}</p>
-              </div>
-            )}
-
-            <div>
-              <label htmlFor="email" className="label-pxl">
-                E-mailadres
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="input-pxl"
-                placeholder="naam@voorbeeld.nl"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password" className="label-pxl">
-                Wachtwoord
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="input-pxl"
-                placeholder="••••••••"
-              />
-            </div>
-
-            <div className="pt-2">
-              <button
-                type="submit"
-                disabled={loading}
-                className="btn-pxl-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? 'Bezig met inloggen...' : 'Inloggen'}
-              </button>
-            </div>
-          </form>
-        </div>
-
-        {/* Admin Credentials Info */}
-        <div className="mt-8 text-center">
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-            <p className="text-sm font-medium text-pxl-black mb-2">
-              Standaard admin login:
-            </p>
-            <p className="text-sm font-mono text-gray-600">
-              admin@leerlijnentool.nl
-            </p>
-            <p className="text-sm font-mono text-gray-600">
-              admin123
-            </p>
+        {error && (
+          <div className="bg-red-50 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded mb-6 max-w-md mx-auto">
+            <p className="text-sm">{error}</p>
           </div>
+        )}
+
+        {/* Role Selection Cards */}
+        <div className="grid md:grid-cols-3 gap-6">
+          {roleOptions.map((option) => (
+            <button
+              key={option.role}
+              onClick={() => handleRoleSelect(option.role)}
+              disabled={loading !== null}
+              className={`
+                group relative overflow-hidden rounded-2xl p-8 text-white
+                transition-all duration-300 transform hover:scale-105 hover:shadow-2xl
+                disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none
+                ${option.color}
+              `}
+            >
+              {/* Background decoration */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-150"></div>
+
+              <div className="relative z-10">
+                <div className="text-5xl mb-4">{option.icon}</div>
+                <h2 className="text-2xl font-heading font-bold mb-2">
+                  {option.title}
+                </h2>
+                <p className="text-sm opacity-90 font-light">
+                  {option.description}
+                </p>
+
+                {loading === option.role ? (
+                  <div className="mt-6 flex items-center justify-center">
+                    <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span className="ml-2 text-sm">Laden...</span>
+                  </div>
+                ) : (
+                  <div className="mt-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="text-sm font-medium">Klik om in te loggen →</span>
+                  </div>
+                )}
+              </div>
+            </button>
+          ))}
         </div>
 
         {/* Footer */}
-        <div className="mt-8 text-center text-sm text-gray-500">
+        <div className="mt-12 text-center text-sm text-gray-500">
           <p>© 2026 Hogeschool PXL</p>
+          <p className="mt-1 text-xs">Healthcare & Education Technology</p>
         </div>
       </div>
     </div>

@@ -1,37 +1,43 @@
 import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
-import bcrypt from 'bcryptjs'
 import { db, users } from './db'
 import { eq } from 'drizzle-orm'
+
+// Default users for each role (created by seed script)
+const defaultUsersByRole: Record<string, string> = {
+  ADMIN: 'admin@pxl.be',
+  DOCENT: 'jan.docent@pxl.be',
+  STUDENT: 'student@pxl.be',
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
-      name: 'Credentials',
+      name: 'Role',
       credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' },
+        role: { label: 'Role', type: 'text' },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error('Email en wachtwoord zijn verplicht')
+        const role = credentials?.role as string
+
+        if (!role || !['ADMIN', 'DOCENT', 'STUDENT'].includes(role)) {
+          throw new Error('Ongeldige rol geselecteerd')
         }
 
+        // Get the default user for this role
+        const defaultEmail = defaultUsersByRole[role]
+
         const user = await db.query.users.findFirst({
-          where: eq(users.email, credentials.email),
+          where: eq(users.email, defaultEmail),
         })
 
         if (!user) {
-          throw new Error('Geen gebruiker gevonden met dit e-mailadres')
-        }
-
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password,
-          user.password
-        )
-
-        if (!isPasswordValid) {
-          throw new Error('Ongeldig wachtwoord')
+          // If no user exists, create a virtual session with the selected role
+          return {
+            id: `virtual-${role.toLowerCase()}`,
+            email: defaultEmail,
+            role: role,
+          }
         }
 
         return {
@@ -64,5 +70,5 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: 'jwt',
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || 'development-secret-key',
 }
