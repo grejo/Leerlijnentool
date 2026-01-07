@@ -1,17 +1,8 @@
 import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
-import { db, users } from './db'
-import { eq } from 'drizzle-orm'
 
-// Default users for each role (created by seed script)
-const defaultUsersByRole: Record<string, string> = {
-  ADMIN: 'admin@pxl.be',
-  DOCENT: 'jan.docent@pxl.be',
-  STUDENT: 'student@pxl.be',
-}
-
+// Simple role-based auth without database lookup
 export const authOptions: NextAuthOptions = {
-  debug: process.env.NODE_ENV === 'development',
   providers: [
     CredentialsProvider({
       name: 'Role',
@@ -19,43 +10,20 @@ export const authOptions: NextAuthOptions = {
         role: { label: 'Role', type: 'text' },
       },
       async authorize(credentials) {
-        try {
-          const role = credentials?.role as string
+        const role = credentials?.role
 
-          if (!role || !['ADMIN', 'DOCENT', 'STUDENT'].includes(role)) {
-            console.error('Invalid role:', role)
-            return null
-          }
-
-          // Get the default user for this role
-          const defaultEmail = defaultUsersByRole[role]
-
-          try {
-            const user = await db.query.users.findFirst({
-              where: eq(users.email, defaultEmail),
-            })
-
-            if (user) {
-              return {
-                id: user.id,
-                email: user.email,
-                role: user.role,
-              }
-            }
-          } catch (dbError) {
-            console.error('Database error:', dbError)
-          }
-
-          // If no user exists in DB, create a virtual session with the selected role
-          return {
-            id: `virtual-${role.toLowerCase()}`,
-            email: defaultEmail,
-            role: role,
-          }
-        } catch (error) {
-          console.error('Auth error:', error)
+        if (!role || !['ADMIN', 'DOCENT', 'STUDENT'].includes(role)) {
           return null
         }
+
+        // Return a simple user object based on role
+        const usersByRole: Record<string, { id: string; email: string; role: string }> = {
+          ADMIN: { id: 'admin-1', email: 'admin@pxl.be', role: 'ADMIN' },
+          DOCENT: { id: 'docent-1', email: 'docent@pxl.be', role: 'DOCENT' },
+          STUDENT: { id: 'student-1', email: 'student@pxl.be', role: 'STUDENT' },
+        }
+
+        return usersByRole[role]
       },
     }),
   ],
@@ -81,5 +49,5 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: 'jwt',
   },
-  secret: process.env.NEXTAUTH_SECRET || 'pxl-leerlijnentool-secret-key-2024',
+  secret: 'pxl-leerlijnentool-secret-key-2024',
 }
