@@ -2,7 +2,6 @@
 
 import { signIn } from 'next-auth/react'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 
 type Role = 'ADMIN' | 'DOCENT' | 'STUDENT'
 
@@ -43,7 +42,6 @@ const roleOptions: RoleOption[] = [
 ]
 
 export default function LoginPage() {
-  const router = useRouter()
   const [loading, setLoading] = useState<Role | null>(null)
   const [error, setError] = useState('')
 
@@ -52,29 +50,23 @@ export default function LoginPage() {
     setLoading(option.role)
 
     try {
-      console.log('Attempting login with role:', option.role)
-
       const result = await signIn('credentials', {
         redirect: false,
         role: option.role,
       })
 
-      console.log('SignIn result:', result)
-
       if (result?.error) {
-        console.error('SignIn error:', result.error)
         setError(`Login fout: ${result.error}`)
         setLoading(null)
       } else if (result?.ok) {
-        console.log('Login successful, redirecting to:', option.redirectTo)
-        router.push(option.redirectTo)
-        router.refresh()
+        // Use window.location for full page reload to avoid router issues
+        window.location.href = option.redirectTo
       } else {
         setError('Onverwachte fout bij inloggen')
         setLoading(null)
       }
     } catch (err) {
-      console.error('Login exception:', err)
+      console.error('Login error:', err)
       setError('Er is een fout opgetreden. Probeer het opnieuw.')
       setLoading(null)
     }
