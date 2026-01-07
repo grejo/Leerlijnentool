@@ -11,6 +11,7 @@ const defaultUsersByRole: Record<string, string> = {
 }
 
 export const authOptions: NextAuthOptions = {
+  debug: process.env.NODE_ENV === 'development',
   providers: [
     CredentialsProvider({
       name: 'Role',
@@ -18,32 +19,42 @@ export const authOptions: NextAuthOptions = {
         role: { label: 'Role', type: 'text' },
       },
       async authorize(credentials) {
-        const role = credentials?.role as string
+        try {
+          const role = credentials?.role as string
 
-        if (!role || !['ADMIN', 'DOCENT', 'STUDENT'].includes(role)) {
-          throw new Error('Ongeldige rol geselecteerd')
-        }
+          if (!role || !['ADMIN', 'DOCENT', 'STUDENT'].includes(role)) {
+            console.error('Invalid role:', role)
+            return null
+          }
 
-        // Get the default user for this role
-        const defaultEmail = defaultUsersByRole[role]
+          // Get the default user for this role
+          const defaultEmail = defaultUsersByRole[role]
 
-        const user = await db.query.users.findFirst({
-          where: eq(users.email, defaultEmail),
-        })
+          try {
+            const user = await db.query.users.findFirst({
+              where: eq(users.email, defaultEmail),
+            })
 
-        if (!user) {
-          // If no user exists, create a virtual session with the selected role
+            if (user) {
+              return {
+                id: user.id,
+                email: user.email,
+                role: user.role,
+              }
+            }
+          } catch (dbError) {
+            console.error('Database error:', dbError)
+          }
+
+          // If no user exists in DB, create a virtual session with the selected role
           return {
             id: `virtual-${role.toLowerCase()}`,
             email: defaultEmail,
             role: role,
           }
-        }
-
-        return {
-          id: user.id,
-          email: user.email,
-          role: user.role,
+        } catch (error) {
+          console.error('Auth error:', error)
+          return null
         }
       },
     }),
@@ -70,5 +81,5 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: 'jwt',
   },
-  secret: process.env.NEXTAUTH_SECRET || 'development-secret-key',
+  secret: process.env.NEXTAUTH_SECRET || 'pxl-leerlijnentool-secret-key-2024',
 }
