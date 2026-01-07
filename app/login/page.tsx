@@ -12,6 +12,7 @@ interface RoleOption {
   description: string
   icon: string
   color: string
+  redirectTo: string
 }
 
 const roleOptions: RoleOption[] = [
@@ -21,6 +22,7 @@ const roleOptions: RoleOption[] = [
     description: 'Beheer gebruikers, opleidingen en alle inhoud',
     icon: '⚙️',
     color: 'bg-pxl-black hover:bg-gray-800',
+    redirectTo: '/admin',
   },
   {
     role: 'DOCENT',
@@ -28,6 +30,7 @@ const roleOptions: RoleOption[] = [
     description: 'Maak en beheer leerinhoud voor je vakken',
     icon: '📚',
     color: 'bg-pxl-green hover:bg-green-700',
+    redirectTo: '/docent',
   },
   {
     role: 'STUDENT',
@@ -35,6 +38,7 @@ const roleOptions: RoleOption[] = [
     description: 'Bekijk leerlijnen en leerinhoud',
     icon: '🎓',
     color: 'bg-pxl-gold hover:bg-yellow-600',
+    redirectTo: '/student',
   },
 ]
 
@@ -43,25 +47,35 @@ export default function LoginPage() {
   const [loading, setLoading] = useState<Role | null>(null)
   const [error, setError] = useState('')
 
-  const handleRoleSelect = async (role: Role) => {
+  const handleRoleSelect = async (option: RoleOption) => {
     setError('')
-    setLoading(role)
+    setLoading(option.role)
 
     try {
+      console.log('Attempting login with role:', option.role)
+
       const result = await signIn('credentials', {
         redirect: false,
-        role: role,
+        role: option.role,
       })
 
+      console.log('SignIn result:', result)
+
       if (result?.error) {
-        setError('Er is een fout opgetreden. Probeer het opnieuw.')
-      } else {
-        router.push('/')
+        console.error('SignIn error:', result.error)
+        setError(`Login fout: ${result.error}`)
+        setLoading(null)
+      } else if (result?.ok) {
+        console.log('Login successful, redirecting to:', option.redirectTo)
+        router.push(option.redirectTo)
         router.refresh()
+      } else {
+        setError('Onverwachte fout bij inloggen')
+        setLoading(null)
       }
     } catch (err) {
+      console.error('Login exception:', err)
       setError('Er is een fout opgetreden. Probeer het opnieuw.')
-    } finally {
       setLoading(null)
     }
   }
@@ -94,10 +108,11 @@ export default function LoginPage() {
           {roleOptions.map((option) => (
             <button
               key={option.role}
-              onClick={() => handleRoleSelect(option.role)}
+              onClick={() => handleRoleSelect(option)}
               disabled={loading !== null}
+              type="button"
               className={`
-                group relative overflow-hidden rounded-2xl p-8 text-white
+                group relative overflow-hidden rounded-2xl p-8 text-white text-left
                 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl
                 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none
                 ${option.color}
@@ -116,12 +131,12 @@ export default function LoginPage() {
                 </p>
 
                 {loading === option.role ? (
-                  <div className="mt-6 flex items-center justify-center">
+                  <div className="mt-6 flex items-center">
                     <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     <span className="ml-2 text-sm">Laden...</span>
                   </div>
                 ) : (
-                  <div className="mt-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="mt-6 flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
                     <span className="text-sm font-medium">Klik om in te loggen →</span>
                   </div>
                 )}
